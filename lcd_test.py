@@ -15,6 +15,8 @@ lcd = SB1602E_driver.lcd()
 lcd.clear()
 
 #Hello world
-lcd.puts(0, "Hello")
-lcd.puts(1, "World !")
+lcd.puts_scroll("Hello World !", "World Hello")
+
+#lcd.puts(0, "Hello")
+#lcd.puts(1, "World !")
 

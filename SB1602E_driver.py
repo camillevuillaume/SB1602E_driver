@@ -1,3 +1,15 @@
+"""
+This is a Python driver for I2C text LCD with a command set compatible with the SB1602E.
+It was tested with the following 8x2 LCD from switch-science:
+http://www.switch-science.com/catalog/1516/
+
+The software is based on the SB1602E C library by Ted Okano.
+http://mbed.org/users/okano/code/TextLCD_SB1602E/file/694061176edf/TextLCD_SB1602E.h
+
+Copyright (c) 2014 Camille Vuillaume
+Released under the MIT License
+"""
+
 import smbus
 from time import *
 
@@ -15,23 +27,23 @@ Comm_ClearDisplay				= 0x01
 Comm_EntryModeSet				= 0x04
 Comm_ReturnHome					= 0x02
 
+Comm_SetDDRAMAddress			= 0x80
+DDRAMAddress_Ofst				= [0x00, 0x40]
 
-#SB1602E general commands
-Comm_SetDDRAMAddress        	= 0x80
-DDRAMAddress_Ofst         		= [0x00, 0x40] 
-Comm_SetCGRAM               	= 0x40
- 
 #SB1602E setting values
 default_Contrast            	= 0x35
 COMMAND                     	= 0x00
 DATA                        	= 0x40
-MaxCharsInALine             	= 0x10		#buffer depth for one line (no scroll function used)
+
+#Model-dependent
+MaxCharsInALine             	= 0x08
 NrLines							= 2
 
 class lcd:
 	
 	#cursor position
 	curs = [0, 0]
+	string = ["", ""]
 		
 	def __init__(self):
 		"""LCD initialization"""
@@ -70,7 +82,7 @@ class lcd:
 		sleep(2e-3);
 		self.curs[0]    = 0
 		self.curs[1]    = 0
-
+		
 	def putcxy(self, c, x, y):
 		"""Write character at position x y"""
 		if (x < MaxCharsInALine) and (y < NrLines):
@@ -90,7 +102,35 @@ class lcd:
 		"""Write string at current position of given line"""
 		for c in list(str):
 			self.putc(line, ord(c))
-
+	
+	def puts_scroll(self, str1, str2):
+		"""Scroll strings from left to right and then right to left"""
+		i = 0
+		j = 0
+		incr_i = 1
+		incr_j = 1
+		while 1:
+			self.clear()
+			for c in list(str1)[i: i+MaxCharsInALine]:
+				self.putc(0, ord(c))
+			for c in list(str2)[j: j+MaxCharsInALine]:
+				self.putc(1, ord(c))
+			i += incr_i
+			j += incr_j
+			if i == 0 or i+MaxCharsInALine == len(str1):
+				incr_i = 0
+			if j == 0 or j+MaxCharsInALine == len(str2):
+				incr_j = 0
+			if i == 0 and j == 0:
+				incr_i = 1
+				incr_j = 1
+				sleep(0.5)
+			if i+MaxCharsInALine == len(str1) and j+MaxCharsInALine == len(str2):
+				incr_i = -1
+				incr_j = -1	
+				sleep(0.5)			
+			sleep(0.5)
+			
 	def set_contrast(constrast):
 		"""Set LCD contrast"""
 		self.lcd_command(Comm_FunctionSet_Extended )

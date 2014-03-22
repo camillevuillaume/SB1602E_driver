@@ -43,7 +43,6 @@ class lcd:
 	
 	#cursor position
 	curs = [0, 0]
-	string = ["", ""]
 		
 	def __init__(self):
 		"""LCD initialization"""

@@ -90,21 +90,42 @@ class lcd:
 			self.lcd_data(c)
 
 	def putc(self, line, c):
-		"""Write one character at current position of given line"""
+		"""Write one character at current position of given line
+		Returns the number of characters left in given line
+		"""
 		if (c == '\n') or (c == '\r'):
 			self.clear_rest_of_line( line )
-			self.curs[line] = 0
-		else:
+			self.curs[line] = MaxCharsInALine
+			return 0
+		elif self.curs[line] < MaxCharsInALine:
  			self.putcxy(c, self.curs[line], line)
  			self.curs[line] += 1
+ 		return MaxCharsInALine - self.curs[line]
 
 	def puts(self, line, str):
-		"""Write string at current position of given line"""
+		"""Write string at current position of given line
+		Returns the number of characters left in given line
+		"""
+		CharsLeft = 0
 		for c in list(str):
-			self.putc(line, ord(c))
+			CharsLeft =  self.putc(line, ord(c))
+			if CharsLeft <= 0:
+				break
+		return CharsLeft
+		
+	def puts(self, str):
+		"""Clear LCD and write string"""
+		self.clear()
+		line = 0
+		for c in list(str):
+			CharsLeft =  self.putc(line, ord(c))
+			if CharsLeft <= 0:
+				line += 1
+				if line >= NrLines:
+					break
 	
 	def puts_scroll(self, str1, str2):
-		"""Scroll strings from left to right and then right to left"""
+		"""Endlessly scroll strings from left to right and then right to left"""
 		i = 0
 		j = 0
 		incr_i = 1
@@ -117,18 +138,18 @@ class lcd:
 				self.putc(1, ord(c))
 			i += incr_i
 			j += incr_j
-			if i == 0 or i+MaxCharsInALine == len(str1):
-				incr_i = 0
-			if j == 0 or j+MaxCharsInALine == len(str2):
-				incr_j = 0
 			if i == 0 and j == 0:
 				incr_i = 1
 				incr_j = 1
 				sleep(0.5)
-			if i+MaxCharsInALine == len(str1) and j+MaxCharsInALine == len(str2):
+			elif i+MaxCharsInALine == len(str1) and j+MaxCharsInALine == len(str2):
 				incr_i = -1
 				incr_j = -1	
 				sleep(0.5)			
+			elif i == 0 or i+MaxCharsInALine == len(str1):
+				incr_i = 0
+			elif j == 0 or j+MaxCharsInALine == len(str2):
+				incr_j = 0
 			sleep(0.5)
 			
 	def set_contrast(constrast):

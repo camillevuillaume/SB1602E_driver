@@ -12,10 +12,13 @@ from time import *
 lcd = SB1602E_driver.lcd()
 
 #LCD clear
-lcd.clear()
+#lcd.clear()
 
 #Hello world
-lcd.puts_scroll("Hello World !", "World Hello")
+
+lcd.puts("Hello world!")
+
+#lcd.puts_scroll("Hello World !", "World Hello")
 
 #lcd.puts(0, "Hello")
 #lcd.puts(1, "World !")
